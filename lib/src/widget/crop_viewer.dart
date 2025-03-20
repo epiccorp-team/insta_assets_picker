@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:extended_image/extended_image.dart';
@@ -65,12 +66,10 @@ class CropViewerState extends State<CropViewer> {
       width: width,
       child: ValueListenableBuilder<AssetEntity?>(
         valueListenable: widget.controller.previewAsset,
-        builder: (_, previewAsset, __) =>
-            Selector<DefaultAssetPickerProvider, List<AssetEntity>>(
+        builder: (_, previewAsset, __) => Selector<DefaultAssetPickerProvider, List<AssetEntity>>(
           selector: (_, DefaultAssetPickerProvider p) => p.selectedAssets,
           builder: (_, List<AssetEntity> selected, __) {
-            final int effectiveIndex =
-                selected.isEmpty ? 0 : selected.indexOf(selected.last);
+            final int effectiveIndex = selected.isEmpty ? 0 : selected.indexOf(selected.last);
 
             // if no asset is selected yet, returns the loader
             if (previewAsset == null && selected.isEmpty) {
@@ -88,8 +87,7 @@ class CropViewerState extends State<CropViewer> {
             _previousAsset = asset;
 
             // hide crop button if an asset is selected or if there is only one crop
-            final hideCropButton = selected.length > 1 ||
-                widget.controller.cropDelegate.cropRatios.length <= 1;
+            final hideCropButton = selected.length > 1 || widget.controller.cropDelegate.cropRatios.length <= 1;
 
             return ValueListenableBuilder<int>(
               valueListenable: widget.controller.cropRatioIndex,
@@ -142,8 +140,7 @@ class InnerCropView extends InstaAssetVideoPlayerStatefulWidget {
   State<InnerCropView> createState() => _InnerCropViewState();
 }
 
-class _InnerCropViewState extends State<InnerCropView>
-    with InstaAssetVideoPlayerMixin {
+class _InnerCropViewState extends State<InnerCropView> with InstaAssetVideoPlayerMixin {
   final ValueNotifier<bool> _isLoadingError = ValueNotifier<bool>(false);
 
   @override
@@ -175,14 +172,11 @@ class _InnerCropViewState extends State<InnerCropView>
             widget.asset,
             thumbnailSize: widget.previewThumbnailSize != null
                 ? ThumbnailSize(
-                    (widget.previewThumbnailSize!.height *
-                            widget.asset.orientatedSize.aspectRatio)
-                        .toInt(),
+                    (widget.previewThumbnailSize!.height * widget.asset.orientatedSize.aspectRatio).toInt(),
                     widget.previewThumbnailSize!.height.toInt(),
                   )
                 : ThumbnailSize(
-                    (widget.height * widget.asset.orientatedSize.aspectRatio)
-                        .toInt(),
+                    (widget.height * widget.asset.orientatedSize.aspectRatio).toInt(),
                     widget.height.toInt(),
                   ),
             isOriginal: false,
@@ -207,8 +201,7 @@ class _InnerCropViewState extends State<InnerCropView>
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
       reverseDuration: const Duration(milliseconds: 300),
-      transitionBuilder: (Widget child, Animation<double> animation) =>
-          FadeTransition(opacity: animation, child: child),
+      transitionBuilder: (Widget child, Animation<double> animation) => FadeTransition(opacity: animation, child: child),
       child: hasLoaded ? buildVideoPlayer() : buildLoader(),
     );
   }
@@ -221,15 +214,14 @@ class _InnerCropViewState extends State<InnerCropView>
           key: ValueKey<String>(widget.asset.id),
           asset: widget.asset,
           isOriginal: true,
-          builder: (BuildContext context, AssetEntity asset) =>
-              insta_crop_view.Crop(
+          builder: (BuildContext context, AssetEntity asset) => insta_crop_view.Crop(
             key: widget.cropKey,
             maximumScale: 10,
             aspectRatio: widget.controller.aspectRatio,
             disableResize: true,
             backgroundColor: widget.theme!.canvasColor,
             initialParam: widget.cropParam,
-            size: widget.asset.orientatedSize,
+            size: Platform.isAndroid && widget.asset.type == AssetType.video ? widget.asset.size : widget.asset.orientatedSize,
             child: widget.asset.type == AssetType.image
                 ? ExtendedImage(
                     image: AssetEntityImageProvider(
@@ -280,9 +272,7 @@ class _InnerCropViewState extends State<InnerCropView>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              widget.hideCropButton
-                  ? const SizedBox.shrink()
-                  : _buildCropButton(),
+              widget.hideCropButton ? const SizedBox.shrink() : _buildCropButton(),
               if (widget.asset.type == AssetType.video) _buildPlayVideoButton(),
             ],
           ),
@@ -305,18 +295,15 @@ class _InnerCropViewState extends State<InnerCropView>
         ),
         size: 32,
         // if crop ratios are the default ones, build UI similar to instagram
-        icon:
-            widget.controller.cropDelegate.cropRatios == kDefaultInstaCropRatios
-                ? Transform.rotate(
-                    angle: 45 * math.pi / 180,
-                    child: Icon(
-                      widget.controller.aspectRatio == 1
-                          ? Icons.unfold_more
-                          : Icons.unfold_less,
-                    ),
-                  )
-                // otherwise simply display the selected aspect ratio
-                : Text(widget.controller.aspectRatioString),
+        icon: widget.controller.cropDelegate.cropRatios == kDefaultInstaCropRatios
+            ? Transform.rotate(
+                angle: 45 * math.pi / 180,
+                child: Icon(
+                  widget.controller.aspectRatio == 1 ? Icons.unfold_more : Icons.unfold_less,
+                ),
+              )
+            // otherwise simply display the selected aspect ratio
+            : Text(widget.controller.aspectRatioString),
       ),
     );
   }
@@ -334,9 +321,7 @@ class _InnerCropViewState extends State<InnerCropView>
             buttonTheme: const ButtonThemeData(padding: EdgeInsets.all(2)),
           ),
           size: 32,
-          icon: isControllerPlaying
-              ? const Icon(Icons.pause_rounded)
-              : const Icon(Icons.play_arrow_rounded),
+          icon: isControllerPlaying ? const Icon(Icons.pause_rounded) : const Icon(Icons.play_arrow_rounded),
         ),
       ),
     );
